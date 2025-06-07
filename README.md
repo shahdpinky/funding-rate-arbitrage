@@ -51,7 +51,7 @@ Upon running the `main.py` script, you'll be presented with the main menu, where
 ### Option Details
 
 1. **View USDC balances on each DEX**
-  - This option displays your available USDC balances on the supported DEXs, including Orderly, Hyperliquid, and ApexPro.
+  - This option displays your available USDC balances on the supported DEXs, including Orderly and Hyperliquid.
 
 ![balances](./public/balances.png)
 
@@ -104,7 +104,6 @@ Throughout the program's execution, you'll see clear prompts and instructions to
 ├── README.md         
 ├── requirements.txt  # Project dependencies
 ├── src               # Source code for the project
-│   ├── apex          # Apex DEX implementation
 │   ├── hyperliq      # Hyperliq DEX implementation
 │   ├── orderly       # Orderly DEX implementation
 │   └── strategies    # Arbitrage strategies

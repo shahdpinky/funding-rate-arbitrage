@@ -6,7 +6,6 @@ import requests
 sys.path.append("src")
 sys.path.append("src/orderly")
 sys.path.append("src/hyperliq")
-sys.path.append("src/apex")
 
 import time
 from eth_account import Account
@@ -22,9 +21,6 @@ from orderly.client import Client
 from orderly.config import Config
 from orderly.order import OrderType, Side
 from orderly.util import print_ascii_art
-from apex.funding_rate import ApexProFundingRates
-from apex.order import ApexProOrder
-from src.apex.apex_utils import apexpro_setup
 from strategies.funding_rate_arbitrage import FundingRateArbitrage
 from prompt_toolkit import print_formatted_text, HTML
 
@@ -88,10 +84,6 @@ def market_close_an_asset(dex, symbol):
         success = hyperliquid_order.market_close_an_asset(symbol)
         return success
 
-    elif dex == "apexpro":
-        response = apexpro_order.market_close_an_asset(symbol)
-        success = response["data"]["status"] == "PENDING"
-        return success
 
     # * elif ADD NEW DEX HERE
 
@@ -139,18 +131,6 @@ def create_order(dex, symbol, quantity, side):
                     return order_result["status"]
         return success
 
-    elif dex == "apexpro":
-        order_result = apexpro_order.create_market_order(symbol, quantity, side)
-        success = order_result["data"]["status"] == "PENDING"
-        if success:
-            print_formatted_text(
-                f"ApexPro order #{order_result['data']['clientOrderId']} ",
-                "filled ",
-                HTML(f"<ansigreen>{order_result['data']['size']}</ansigreen>"),
-                " at ",
-                HTML(f"<ansigreen>{order_result['data']['price']}</ansigreen>"),
-            )
-        return success
 
     # * elif ADD NEW DEX HERE
 
@@ -185,9 +165,6 @@ def print_open_positions(dex: str):
     elif dex == "hyperliquid":
         print("Hyperliquid Positions: ")
         positions = hyperliquid_order.get_all_positions()
-    elif dex == "apexpro":
-        print("ApexPro Positions: ")
-        positions = apexpro_order.get_all_positions()
 
     for position in positions:
         symbol = position["symbol"]
@@ -210,8 +187,6 @@ def cancel_open_orders(dex: str):
         client.order.cancel_all_orders()
     elif dex == "hyperliquid":
         hyperliquid_order.cancel_open_orders()
-    elif dex == "apexpro":
-        apexpro_order.cancel_open_orders()
 
 
 if __name__ == "__main__":
@@ -237,10 +212,6 @@ if __name__ == "__main__":
     hyperliquid_order = HyperLiquidOrder(hl_address, hl_info, hl_exchange)
     print("Connected to Hyperliquid")
 
-    # Set up ApexPro client
-    apexpro_client = apexpro_setup()
-    apexpro_order = ApexProOrder(apexpro_client)
-    print("Connected to ApexPro")
 
     DEX_rates_list = [
         ("orderly", OrderlyFundingRates().get_orderly_funding_rates()),
@@ -250,7 +221,6 @@ if __name__ == "__main__":
                 hl_address, hl_info, hl_exchange
             ).get_hyperliquid_funding_rates(),
         ),
-        ("apexpro", ApexProFundingRates().get_apexpro_funding_rates()),
         # *** ADD NEW DEX HERE ***:
     ]
 
@@ -262,7 +232,6 @@ if __name__ == "__main__":
         dex_options = [
             "orderly",
             "hyperliquid",
-            "apexpro",
         ]
         options = [
             "View USDC balances on each DEX",  # 1
@@ -284,10 +253,6 @@ if __name__ == "__main__":
             hyperliquid_amount = float(hl_info.user_state(hl_address)["withdrawable"])
             print_available_USDC_per_DEX("Hyperliquid balance", hyperliquid_amount)
 
-            apexpro_amount = float(
-                apexpro_order.account["data"]["wallets"][0]["balance"]
-            )
-            print_available_USDC_per_DEX("ApexPro balance", apexpro_amount)
 
             options = ["Back to Main Menu"]
             choice = prompt_user(options, "")

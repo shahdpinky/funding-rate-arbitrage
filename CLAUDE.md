@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a cryptocurrency perpetual futures funding rate arbitrage system that exploits funding rate differences across multiple decentralized exchanges (DEXs). The system monitors funding rates on Orderly, Hyperliquid, and ApexPro, identifies arbitrage opportunities, and executes trades to profit from rate differences.
+This is a cryptocurrency perpetual futures funding rate arbitrage system that exploits funding rate differences across multiple decentralized exchanges (DEXs). The system monitors funding rates on Orderly and Hyperliquid, identifies arbitrage opportunities, and executes trades to profit from rate differences.
 
 ## Key Architecture
 
@@ -28,7 +28,6 @@ Copy `.env.example` to `.env` and configure:
 - DEX-specific API keys and secrets for each exchange
 - Orderly requires separate testnet/mainnet keys
 - Hyperliquid only needs wallet credentials for testnet
-- ApexPro requires full API key setup with Stark keys
 
 ## Development Commands
 
