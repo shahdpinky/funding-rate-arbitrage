@@ -1,3 +1,4 @@
 .env
+venv/
 config.json
 TODO_list.txt

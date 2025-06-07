@@ -1,9 +1,8 @@
-eth-account
-web3
-cryptography
-base58
-python-dotenv
-apexpro
-pandas
-numpy
-prompt_toolkit
+eth-account==0.13.7
+web3==7.12.0
+cryptography==45.0.3
+base58==2.1.1
+python-dotenv==1.1.0
+pandas==2.3.0
+numpy==2.3.0
+prompt_toolkit==3.0.51
