@@ -76,3 +76,46 @@ Both perpetual and spot markets support:
     "best_ask": {"price": 50001.0, "size": 0.2, "n_orders": 3}
 }
 ```
+
+## Testing
+
+### Test Structure
+```
+tests/
+├── unit/                 # Fast tests with mocks (no network)
+│   ├── test_spot_trading.py
+│   └── test_perp_enhancements.py
+├── integration/          # Real API tests (require testnet)
+│   └── test_websocket_integration.py
+├── compatibility/        # Existing functionality tests
+│   ├── test_existing_code.py
+│   ├── test_api_calls.py
+│   └── test_hyperliq_connection.py
+└── conftest.py          # Pytest configuration
+```
+
+### Running Tests
+```bash
+# All tests
+python run_tests.py
+
+# Specific test types
+python run_tests.py --unit         # Fast unit tests
+python run_tests.py --integration  # Network tests (requires .env)
+python run_tests.py --compatibility # Compatibility tests
+python run_tests.py --smoke        # Quick validation
+
+# Using Make
+make test                # All tests
+make test-unit          # Unit tests only
+make test-integration   # Integration tests only
+
+# Using pytest directly
+pytest tests/unit/      # Unit tests
+pytest tests/          # All tests
+```
+
+### Test Requirements
+- **Unit Tests**: No external dependencies (fully mocked)
+- **Integration Tests**: Require `WALLET_ADDRESS` and `PRIVATE_KEY` in `.env`
+- **All Tests**: Configured for **testnet only** (never mainnet)

@@ -1,59 +1,58 @@
-from hyperliquid.utils import constants
-import hyperliq.hyperliq_utils as hyperliq_utils
 import time
+from datetime import timedelta
+
+THIRTY_MINUTES_IN_MS = int(timedelta(minutes=30).total_seconds() * 1000)
 
 
 class HyperliquidFundingRates(object):
-    def __init__(self, address, info, exchange):
+    def __init__(self, info):
         """
         Parameters:
-        address (str): The user's wallet address.
         info (object): An object to interact with Hyperliquid's API.
-        exchange (object): An object representing the exchange.
         """
-        self.address = address
         self.info = info
-        self.exchange = exchange
 
-    def get_funding_history(self, symbol: str) -> int:
+    def get_funding_history(
+        self, symbol: str, start_time: int = None
+    ) -> dict:
         """
-        Retrieves the funding history for a given symbol over the last 30 minutes.
+        Retrieves the funding history for a given symbol.
 
         Parameters:
-        symbol (str): The trading symbol for which funding history is to be retrieved (e.g. "BTC").
+        symbol (str): The trading symbol for which to retrieve funding history (e.g., "BTC").
+        start_time (int): The start time in milliseconds since the epoch. Defaults to 30 minutes ago.
 
         Returns:
-        int: The funding history for the specified symbol starting from 30 minutes ago.
+        dict: The funding history for the specified symbol.
         """
-        # Current timestamp minus 30 mins to get the most recent fr
-        start_time = int(time.time() * 1000) - 1800 * 1000
+        if start_time is None:
+            start_time = int(time.time() * 1000) - THIRTY_MINUTES_IN_MS
 
-        return self.info.funding_history(symbol, start_time)
+        try:
+            return self.info.funding_history(symbol, start_time)
+        except Exception as e:
+            print(f"Error getting funding history for {symbol}: {e}")
+            return {}
 
     def get_hyperliquid_funding_rates(self) -> dict:
         """
         Fetches asset names and their corresponding funding rates from the API.
 
         Returns:
-        dict: a dictionary where the symbol is the key and the funding rate is the value
+        dict: A dictionary where the symbol is the key and the 8-hour funding rate is the value.
         """
+        try:
+            meta_data = self.info.meta()
+            asset_info = meta_data["universe"]
 
-        # Get meta data for all assets
-        meta_data = hyperliq_utils.get_meta_data()
+            assets_to_funding_rates = {}
+            for asset in asset_info:
+                symbol = asset["name"]
+                # The funding rate is hourly, so we multiply by 8 to get the 8-hour funding rate.
+                funding_rate = float(asset["funding"]) * 8
+                assets_to_funding_rates[symbol] = funding_rate
 
-        # Separate the meta data into asset info and it's asset context
-        asset_info = meta_data[0]["universe"]
-        asset_context = meta_data[1]
-
-        # Initialize dict to hold assets, funding rates
-        assets_to_funding_rates = {}
-
-        # Iterating over both lists, assuming they are aligned by index
-        for asset, context in zip(asset_info, asset_context):
-            symbol = asset["name"]
-            funding_rate = (
-                float(context["funding"]) * 8
-            )  # convert to 8hr rate from 1hr rate
-            assets_to_funding_rates[symbol] = funding_rate
-
-        return assets_to_funding_rates
+            return assets_to_funding_rates
+        except Exception as e:
+            print(f"Error getting funding rates: {e}")
+            return {}

@@ -13,7 +13,20 @@ load_dotenv()
 
 
 def hyperliquid_setup(base_url=None, skip_ws=False):
+    """
+    Sets up the connection to the Hyperliquid API.
 
+    This function relies on the following environment variables:
+    - PRIVATE_KEY: The private key of the wallet to use.
+    - WALLET_ADDRESS: The address of the wallet to use.
+
+    Parameters:
+    base_url (str, optional): The base URL of the Hyperliquid API. Defaults to None.
+    skip_ws (bool, optional): Whether to skip the WebSocket connection. Defaults to False.
+
+    Returns:
+    tuple: A tuple containing the address, info object, and exchange object.
+    """
     # Get address
     account: LocalAccount = eth_account.Account.from_key(os.getenv("PRIVATE_KEY"))
     address = os.getenv("WALLET_ADDRESS")
@@ -34,7 +47,7 @@ def hyperliquid_setup(base_url=None, skip_ws=False):
     return address, info, exchange
 
 
-def get_meta_data():
+def get_meta_data(base_url=constants.TESTNET_API_URL):
     """
     Retrieves meta data for all tradeable perps on Hyperliquid
 
@@ -42,7 +55,7 @@ def get_meta_data():
     """
 
     # API endpoint
-    url = constants.TESTNET_API_URL + "/info"
+    url = base_url + "/info"
 
     # Headers required for the request
     headers = {"Content-Type": "application/json"}
@@ -52,8 +65,12 @@ def get_meta_data():
         "type": "metaAndAssetCtxs",
     }
 
-    # Sending POST request to the API
-    response = requests.post(url, headers=headers, data=json.dumps(body))
-
-    return response.json()
+    try:
+        # Sending POST request to the API
+        response = requests.post(url, headers=headers, data=json.dumps(body))
+        response.raise_for_status()  # Raise an exception for bad status codes
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error getting metadata: {e}")
+        return None
 

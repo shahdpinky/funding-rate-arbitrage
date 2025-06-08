@@ -26,15 +26,24 @@ from prompt_toolkit import print_formatted_text, HTML
 
 load_dotenv()
 
+# Configuration
+HYPERLIQUID_API_URL = constants.TESTNET_API_URL
+
 
 def prompt_user(options, prompt):
     """Helper function for CLI"""
     print(prompt)
     for i, option in enumerate(options, 1):
         print(f"{i}) {option} ")
-    choice = int(input("Enter your choice: "))
-
-    return choice
+    while True:
+        try:
+            choice = int(input("Enter your choice: "))
+            if 1 <= choice <= len(options):
+                return choice
+            else:
+                print("Invalid choice, please try again.")
+        except ValueError:
+            print("Invalid input, please enter a number.")
 
 
 def clear_screen():
@@ -112,24 +121,7 @@ def create_order(dex, symbol, quantity, side):
         return success
 
     elif dex == "hyperliquid":
-        order_result = hyperliquid_order.create_market_order(symbol, quantity, side)
-        success = order_result["status"] == "ok"
-        if success:
-            for status in order_result["response"]["data"]["statuses"]:
-                try:
-                    filled = status["filled"]
-                    print_formatted_text(
-                        f"Hyperliquid order #{filled['oid']} ",
-                        "filled ",
-                        HTML(f"<ansigreen>{filled['totalSz']}</ansigreen>"),
-                        " at ",
-                        HTML(f"<ansigreen>{filled['avgPx']}</ansigreen>"),
-                    )
-
-                except KeyError:
-                    print(f'Error: {status["error"]}')
-                    return order_result["status"]
-        return success
+        return hyperliquid_order.create_market_order(symbol, quantity, side)
 
 
     # * elif ADD NEW DEX HERE
@@ -207,7 +199,7 @@ if __name__ == "__main__":
 
     # Set up Hyperliquid client
     hl_address, hl_info, hl_exchange = hyperliquid_setup(
-        constants.TESTNET_API_URL, skip_ws=True
+        HYPERLIQUID_API_URL, skip_ws=True
     )
     hyperliquid_order = HyperLiquidOrder(hl_address, hl_info, hl_exchange)
     print("Connected to Hyperliquid")
@@ -218,7 +210,7 @@ if __name__ == "__main__":
         (
             "hyperliquid",
             HyperliquidFundingRates(
-                hl_address, hl_info, hl_exchange
+                hl_info
             ).get_hyperliquid_funding_rates(),
         ),
         # *** ADD NEW DEX HERE ***:
